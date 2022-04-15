@@ -44,17 +44,18 @@ class TikTokApi:
     logger = logging.getLogger(LOGGER_NAME)
 
     def __init__(
-        self,
-        logging_level: int = logging.WARNING,
-        request_delay: Optional[int] = None,
-        custom_device_id: Optional[str] = None,
-        generate_static_device_id: Optional[bool] = False,
-        custom_verify_fp: Optional[str] = None,
-        use_test_endpoints: Optional[bool] = False,
-        proxy: Optional[str] = None,
-        executable_path: Optional[str] = None,
-        *args,
-        **kwargs,
+            self,
+            logging_level: int = logging.WARNING,
+            request_delay: Optional[int] = None,
+            custom_device_id: Optional[str] = None,
+            generate_static_device_id: Optional[bool] = False,
+            custom_verify_fp: Optional[str] = None,
+            ms_token: Optional[str] = None,
+            use_test_endpoints: Optional[bool] = False,
+            proxy: Optional[str] = None,
+            executable_path: Optional[str] = None,
+            *args,
+            **kwargs,
     ):
         """The TikTokApi class. Used to interact with TikTok. This is a singleton
             class to prevent issues from arising with playwright
@@ -121,6 +122,7 @@ class TikTokApi:
                 custom_device_id=custom_device_id,
                 generate_static_device_id=generate_static_device_id,
                 custom_verify_fp=custom_verify_fp,
+                ms_token=ms_token,
                 use_test_endpoints=use_test_endpoints,
                 proxy=proxy,
                 executable_path=executable_path,
@@ -146,6 +148,7 @@ class TikTokApi:
         self._user_agent = "5.0 (iPhone; CPU iPhone OS 14_8 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1"
         self._proxy = kwargs.get("proxy", None)
         self._custom_verify_fp = kwargs.get("custom_verify_fp")
+        self._ms_token = kwargs.get("ms_token", None)
         self._signer_url = kwargs.get("external_signer", None)
         self._request_delay = kwargs.get("request_delay", None)
         self._requests_extra_kwargs = kwargs.get("requests_extra_kwargs", {})
@@ -195,6 +198,7 @@ class TikTokApi:
         """
         processed = self._process_kwargs(kwargs)
         kwargs["custom_device_id"] = processed.device_id
+        kwargs['ms_token'] = self._ms_token
         if self._request_delay is not None:
             time.sleep(self._request_delay)
 
@@ -296,8 +300,8 @@ class TikTokApi:
         try:
             parsed_data = r.json()
             if (
-                parsed_data.get("type") == "verify"
-                or parsed_data.get("verifyConfig", {}).get("type", "") == "verify"
+                    parsed_data.get("type") == "verify"
+                    or parsed_data.get("verifyConfig", {}).get("type", "") == "verify"
             ):
                 self.logger.error(
                     "Tiktok wants to display a captcha.\nResponse:\n%s\nCookies:\n%s\nURL:\n%s",
@@ -387,7 +391,7 @@ class TikTokApi:
             self.shutdown()
         return
 
-    def external_signer(self, url, custom_device_id=None, verifyFp=None):
+    def external_signer(self, url, custom_device_id=None, verifyFp=None, ms_token=None):
         """Makes requests to an external signer instead of using a browser.
 
         ##### Parameters
@@ -492,6 +496,8 @@ class TikTokApi:
                 kwargs["url"], custom_device_id=kwargs.get("custom_device_id", None)
             )
         query = {"verifyFp": verify_fp, "_signature": signature}
+        if self._ms_token is not None:
+            query["ms_token"] = self._ms_token
         url = "{}&{}".format(kwargs["url"], urlencode(query))
         r = requests.get(
             url,

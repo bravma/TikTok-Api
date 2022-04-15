@@ -204,7 +204,11 @@ class browser(BrowserInterface):
         else:
             device_id = self.device_id
 
-        url = "{}&verifyFp={}&device_id={}".format(url, verifyFp, device_id)
+        ms_token = kwargs.get("ms_token")
+        if ms_token is not None:
+            url = "{}&verifyFp={}&device_id={}&msToken={}".format(url, verifyFp, device_id, ms_token)
+        else:
+            url = "{}&verifyFp={}&device_id={}".format(url, verifyFp, device_id)
 
         await page.add_script_tag(content=_get_acrawler())
         evaluatedPage = await page.evaluate(
