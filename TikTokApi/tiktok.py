@@ -434,9 +434,6 @@ class TikTokApi:
         )
 
     def _get_cookies(self, **kwargs):
-        if self._cookies is not None:
-            return self._cookies
-
         """Extracts cookies from the kwargs passed to the function for get_data"""
         device_id = kwargs.get(
             "custom_device_id",
@@ -451,7 +448,7 @@ class TikTokApi:
             verifyFp = kwargs.get("custom_verify_fp")
 
         if kwargs.get("force_verify_fp_on_cookie_header", False):
-            return {
+            cookies = {
                 "tt_webid": device_id,
                 "tt_webid_v2": device_id,
                 "csrf_session_id": kwargs.get("csrf_session_id"),
@@ -463,7 +460,7 @@ class TikTokApi:
                 "ttwid": kwargs.get("ttwid"),
             }
         else:
-            return {
+            cookies = {
                 "tt_webid": device_id,
                 "tt_webid_v2": device_id,
                 "csrf_session_id": kwargs.get("csrf_session_id"),
@@ -473,6 +470,10 @@ class TikTokApi:
                 ),
                 "ttwid": kwargs.get("ttwid"),
             }
+
+        if self._cookies is not None:
+            cookies = {**cookies, **self._cookies}
+        return cookies
 
     def get_bytes(self, **kwargs) -> bytes:
         """Returns TikTok's response as bytes, similar to get_data"""
