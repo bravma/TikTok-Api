@@ -51,6 +51,7 @@ class TikTokApi:
             generate_static_device_id: Optional[bool] = False,
             custom_verify_fp: Optional[str] = None,
             ms_token: Optional[str] = None,
+            cookies: Optional[dict] = None,
             use_test_endpoints: Optional[bool] = False,
             proxy: Optional[str] = None,
             executable_path: Optional[str] = None,
@@ -123,6 +124,7 @@ class TikTokApi:
                 generate_static_device_id=generate_static_device_id,
                 custom_verify_fp=custom_verify_fp,
                 ms_token=ms_token,
+                cookies=cookies,
                 use_test_endpoints=use_test_endpoints,
                 proxy=proxy,
                 executable_path=executable_path,
@@ -149,6 +151,7 @@ class TikTokApi:
         self._proxy = kwargs.get("proxy", None)
         self._custom_verify_fp = kwargs.get("custom_verify_fp")
         self._ms_token = kwargs.get("ms_token", None)
+        self._cookies = kwargs.get("cookies", None)
         self._signer_url = kwargs.get("external_signer", None)
         self._request_delay = kwargs.get("request_delay", None)
         self._requests_extra_kwargs = kwargs.get("requests_extra_kwargs", {})
@@ -431,6 +434,9 @@ class TikTokApi:
         )
 
     def _get_cookies(self, **kwargs):
+        if self._cookies is not None:
+            return self._cookies
+
         """Extracts cookies from the kwargs passed to the function for get_data"""
         device_id = kwargs.get(
             "custom_device_id",
