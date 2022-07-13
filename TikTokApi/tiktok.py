@@ -257,6 +257,8 @@ class TikTokApi:
             tt_params = None
 
         query = {"verifyFp": verify_fp, "device_id": device_id, "_signature": signature}
+        if self._ms_token is not None: # TODO: Set MSToken here?
+            query["msToken"] = self._ms_token
         url = "{}&{}".format(full_url, urlencode(query))
 
         h = requests.head(
@@ -504,7 +506,7 @@ class TikTokApi:
             )
         query = {"verifyFp": verify_fp, "_signature": signature}
         if self._ms_token is not None:
-            query["ms_token"] = self._ms_token
+            query["msToken"] = self._ms_token
         url = "{}&{}".format(kwargs["url"], urlencode(query))
         r = requests.get(
             url,
