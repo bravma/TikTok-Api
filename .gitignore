@@ -29,3 +29,5 @@ MANIFEST
 src
 .vscode
 .env
+/.idea/
+/TikTok-Api.iml
